@@ -1,24 +1,27 @@
 import React from "react";
 import { FormProvider, useForm } from "react-hook-form";
-import { Button, FormCheckbox, FormInput, FormSelect } from "../Components";
+import { Button, FormCheckbox, FormInput, FormSelect, Header } from "../components";
 import { DevTool } from "@hookform/devtools";
+import { useStateContext } from "../contexts/ContextProvider";
 
 function ApplicantForm() {
+    const { currentColor } = useStateContext();
     const hookForm = useForm();
     const onSubmit = (data) => {
         console.log(data);
     };
     return (
-        <div className=" mt-14">
+        <div className="m-2 mt-24 bg-white md:m-10 md:p-10 rounded-3xl dark:bg-secondary-dark-bg">
+            <Header category="Page" title="New Applicants" />
             <FormProvider {...hookForm}>
                 <form onSubmit={hookForm.handleSubmit(onSubmit)}>
-                    <fieldset className=" border  border-gray-200 dark:border-gray-700 rounded-lg mb-4">
+                    <fieldset className="mb-4 border border-gray-200 rounded-lg dark:border-gray-700">
                         <div className="w-full py-2.5 px-4 bg-gray-100 dark:bg-gray-800 rounded-t-lg">
-                            <legend className="text-gray-800 font-bold dark:text-gray-400">
+                            <legend className="font-bold text-gray-800 dark:text-gray-400">
                                 Applicant
                             </legend>
                         </div>
-                        <div className="p-4 grid md:grid-cols-4 md:gap-4">
+                        <div className="grid p-4 md:grid-cols-4 md:gap-4">
                             <FormInput
                                 id={"first_name"}
                                 placeholder={"John"}
@@ -62,13 +65,13 @@ function ApplicantForm() {
                             />
                         </div>
                     </fieldset>
-                    <fieldset className=" border  border-gray-200 dark:border-gray-700 rounded-lg mb-4">
+                    <fieldset className="mb-4 border border-gray-200 rounded-lg dark:border-gray-700">
                         <div className="w-full py-2.5 px-4 bg-gray-100 dark:bg-gray-800 rounded-t-lg">
-                            <legend className="text-gray-800 font-bold dark:text-gray-400">
+                            <legend className="font-bold text-gray-800 dark:text-gray-400">
                                 Passport
                             </legend>
                         </div>
-                        <div className="p-4 grid md:grid-cols-3 md:gap-4">
+                        <div className="grid p-4 md:grid-cols-3 md:gap-4">
                             <FormInput
                                 id={"passport_no"}
                                 placeholder={""}
@@ -105,13 +108,13 @@ function ApplicantForm() {
                         </div>
                     </fieldset>
                     <div className="grid md:grid-cols-2 md:gap-2">
-                        <fieldset className=" border  border-gray-200 dark:border-gray-700 rounded-lg mb-4">
+                        <fieldset className="mb-4 border border-gray-200 rounded-lg dark:border-gray-700">
                             <div className="w-full py-2.5 px-4 bg-gray-100 dark:bg-gray-800 rounded-t-lg">
-                                <legend className="text-gray-800 font-bold dark:text-gray-400">
+                                <legend className="font-bold text-gray-800 dark:text-gray-400">
                                     Visa
                                 </legend>
                             </div>
-                            <div className="p-4 gap-4 grid md:grid-cols-2 md:gap-4">
+                            <div className="grid gap-4 p-4 md:grid-cols-2 md:gap-4">
                                 <div className="col-span-2">
                                     <FormInput
                                         id={"agent"}
@@ -162,13 +165,13 @@ function ApplicantForm() {
                                 />
                             </div>
                         </fieldset>
-                        <fieldset className=" border  border-gray-200 dark:border-gray-700 rounded-lg mb-4">
+                        <fieldset className="mb-4 border border-gray-200 rounded-lg dark:border-gray-700">
                             <div className="w-full py-2.5 px-4 bg-gray-100 dark:bg-gray-800 rounded-t-lg">
-                                <legend className="text-gray-800 font-bold dark:text-gray-400">
+                                <legend className="font-bold text-gray-800 dark:text-gray-400">
                                     Other Info
                                 </legend>
                             </div>
-                            <div className="p-4 gap-4 grid md:grid-cols-2 md:gap-4">
+                            <div className="grid gap-4 p-4 md:grid-cols-2 md:gap-4">
                                 <FormInput
                                     id={"height"}
                                     placeholder={""}
@@ -238,9 +241,9 @@ function ApplicantForm() {
                             </div>
                         </fieldset>
                     </div>
-                    <Button type={"submit"} className={"ml-auto"}>
-                        Submit
-                    </Button>
+                    <div className="mt-4 ml-14">
+                      <Button color="white" bgColor={currentColor} text="Submit" borderRadius="10px" />
+                    </div>
                 </form>
             </FormProvider>
             <DevTool control={hookForm.control} />
