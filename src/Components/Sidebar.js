@@ -3,6 +3,7 @@ import { BsPeopleFill } from "react-icons/bs";
 import { GoPeople } from "react-icons/go";
 import { LuPieChart } from "react-icons/lu";
 import { MdWorkspacesOutline } from "react-icons/md";
+import { PiWarningCircle } from "react-icons/pi";
 import { TbReport, TbSettings } from "react-icons/tb";
 import { NavLink } from "react-router-dom";
 
@@ -21,6 +22,10 @@ const sidebarLinks = [
             {
                 name: "reports",
                 icon: <TbReport />,
+            },
+            {
+                name: "issues",
+                icon: <PiWarningCircle />,
             },
         ],
     },
