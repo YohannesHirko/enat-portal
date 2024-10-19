@@ -3,10 +3,13 @@ import { FormProvider, useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import FormInput from "../Form/FormInput";
 import { useAuthContext } from "../../Contexts/AuthContext";
-import Button from "../Button";
+import Button from "../Globals/Button";
 import { string, z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { DevTool } from "@hookform/devtools";
+import { useMutation } from "@tanstack/react-query";
+import { genericMutation } from "../../Helpers/fetchers";
+import { toast } from "sonner";
 
 const schema = z.object({
     email: string().email(),
@@ -15,28 +18,28 @@ const schema = z.object({
 
 function SigninForm() {
     const hookform = useForm({ resolver: zodResolver(schema) });
-    const { url, setAuthToken } = useAuthContext();
-    const [errorCode, setErrorCode] = useState(null);
-
+    const { url, setAuthToken, authToken } = useAuthContext();
+    const mutation = useMutation({
+        mutationFn: genericMutation,
+        onSuccess: (data) => {
+            setAuthToken(data.accessToken);
+            localStorage.setItem("jwtToken", data.accessToken);
+            toast.success("Successfully logged in!");
+        },
+        onError: (error) => {
+            toast.error(
+                error?.data?.message || "Login failed. Please try again."
+            );
+        },
+    });
     const onSubmit = async (data) => {
-        try {
-            setErrorCode(null);
-            const response = await fetch(`${url}/enat/v1/auth/login`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(data),
-            });
-            const apiData = await response.json();
-            if (response.status !== 201) {
-                setErrorCode(apiData.errorCode);
-            }
-            setAuthToken(apiData.token);
-            localStorage.setItem("jwtToken", apiData.token);
-        } catch (error) {
-            console.log(error);
-        }
+        mutation.mutate({
+            baseURL: url,
+            token: authToken,
+            endpoint: `auth/login`,
+            method: "POST",
+            payload: data,
+        });
     };
     return (
         <div className="w-full p-4 bg-white border border-gray-200 rounded-lg shadow sm:p-6 md:p-8 dark:bg-gray-800 dark:border-gray-700">
@@ -54,9 +57,6 @@ function SigninForm() {
                         label={"Email address"}
                         type={"email"}
                         isDisabled={hookform.formState.isSubmitting}
-                        errorCode={
-                            ["AUTH001"].includes(errorCode) ? errorCode : null
-                        }
                         formErrorMessage={
                             hookform.formState.errors.email
                                 ? hookform.formState.errors.email.message
@@ -69,9 +69,6 @@ function SigninForm() {
                         label={"Password"}
                         type={"password"}
                         isDisabled={hookform.formState.isSubmitting}
-                        errorCode={
-                            ["AUTH002"].includes(errorCode) ? errorCode : null
-                        }
                         formErrorMessage={
                             hookform.formState.errors.password
                                 ? hookform.formState.errors.password.message
@@ -109,16 +106,6 @@ function SigninForm() {
                     >
                         Log in
                     </Button>
-
-                    <div className="text-sm font-medium text-gray-500 dark:text-gray-300">
-                        Not registered?{" "}
-                        <Link
-                            to="/auth/signup"
-                            className="text-blue-700 hover:underline dark:text-blue-500"
-                        >
-                            Create account
-                        </Link>
-                    </div>
                 </form>
             </FormProvider>
             <DevTool control={hookform.control} />

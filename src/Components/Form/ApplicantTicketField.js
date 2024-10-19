@@ -1,44 +1,56 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import FormInput from "./FormInput";
-import FormSelect from "./FormSelect";
 import { FormProvider, useForm } from "react-hook-form";
-import Button from "../Button";
 import { DevTool } from "@hookform/devtools";
 import { useAuthContext } from "../../Contexts/AuthContext";
+import { useApplicantContext } from "../../Pages/ApplicantForm";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
+import { genericMutation } from "../../Helpers/fetchers";
+import { Button } from "@mui/material";
 
 function ApplicantTicketField() {
+    const [editingTicket, setEditingTicket] = useState();
+    const { isEditing, applicant, id } = useApplicantContext();
     const { url, authToken } = useAuthContext();
     const hookform = useForm();
+    const navigate = useNavigate();
     const { errors } = hookform.formState;
 
-    const onSubmit = async (data) => {
-        console.log(data);
-        const response = await fetch(`${url}/enat/v1/visa`, {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${authToken}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(data),
-        });
-        const apiData = await response.json();
-        if (response.status === 409) {
-            hookform.setError(
-                "visa_no",
-                {
-                    type: "custom",
-                    message: "visa number already exists in the database",
-                },
-                { shouldFocus: true }
+    useEffect(() => {
+        if (isEditing && applicant?.Ticket) {
+            setEditingTicket(true);
+            hookform.reset({
+                ...applicant.Ticket,
+            });
+        } else if (!applicant?.Ticket) {
+            setEditingTicket(false);
+            hookform.reset();
+        }
+    }, [applicant, isEditing]);
+    const mutation = useMutation({
+        mutationFn: genericMutation,
+        onSuccess: (data) => {
+            navigate(`/applicants`);
+            toast.success(
+                `Successfully ${editingTicket ? "Edited" : "Added"} ticket`
             );
-            console.log("reached");
-        }
-        if (response.status !== 200) {
-            const apiData = await response.json();
-            console.log(apiData);
-        }
-
-        console.log(apiData);
+        },
+        onError: (error) => {
+            toast.error(error?.message);
+        },
+    });
+    const onSubmit = (data) => {
+        mutation.mutate({
+            baseURL: url,
+            token: authToken,
+            endpoint: editingTicket
+                ? `applicants/${id}/ticket/${applicant.Ticket.ticket_id}`
+                : `applicants/${id}/ticket`,
+            method: editingTicket ? "PATCH" : "POST",
+            payload: data,
+        });
     };
     return (
         <div className="">
@@ -70,12 +82,25 @@ function ApplicantTicketField() {
                                 placeholder={""}
                                 label={"Payment Date"}
                                 formErrorMessage={errors.payment_day?.message}
+                                formOptions={{
+                                    required: {
+                                        value: true,
+                                        message: "Payment date is required",
+                                    },
+                                }}
                             />
                             <FormInput
                                 id={"amount"}
                                 placeholder={""}
                                 label={"Amount"}
+                                type={"number"}
                                 formErrorMessage={errors.amount?.message}
+                                formOptions={{
+                                    required: {
+                                        value: true,
+                                        message: "Amount date is required",
+                                    },
+                                }}
                             />
                             <FormInput
                                 id={"depart_date"}
@@ -83,6 +108,12 @@ function ApplicantTicketField() {
                                 placeholder={""}
                                 label={"Depart Date"}
                                 formErrorMessage={errors.depart_date?.message}
+                                formOptions={{
+                                    required: {
+                                        value: true,
+                                        message: "Depart date is required",
+                                    },
+                                }}
                             />
                             <FormInput
                                 id={"depart_city"}
@@ -96,6 +127,12 @@ function ApplicantTicketField() {
                                 placeholder={""}
                                 label={"Arrival Date"}
                                 formErrorMessage={errors.arrival_date?.message}
+                                formOptions={{
+                                    required: {
+                                        value: true,
+                                        message: "Arrival date is required",
+                                    },
+                                }}
                             />
                             <FormInput
                                 id={"arrival_city"}
@@ -105,9 +142,19 @@ function ApplicantTicketField() {
                             />
                         </div>
                     </fieldset>
-                    <div className="p-4">
-                        <Button type={"submit"} className={""}>
-                            Submit
+                    <div className="p-4 w-1/2 lg:w-1/3">
+                        <Button
+                            type={"submit"}
+                            variant="outlined"
+                            color="brand"
+                            size="large"
+                            fullWidth
+                            disabled={
+                                !hookform.formState.isDirty ||
+                                mutation.isPending
+                            }
+                        >
+                            {editingTicket ? "Save" : "Create"}
                         </Button>
                     </div>
                 </form>

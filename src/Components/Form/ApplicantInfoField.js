@@ -1,150 +1,142 @@
-import React from "react";
+import React, { useEffect } from "react";
 import FormInput from "./FormInput";
 import FormSelect from "./FormSelect";
 import { FormProvider, useForm } from "react-hook-form";
 import FormCheckbox from "./FormCheckbox";
-import Button from "../Button";
 import { DevTool } from "@hookform/devtools";
 import { useAuthContext } from "../../Contexts/AuthContext";
-import FormSubmittedModal from "../Modals/FormSubmittedModal";
-import Modal from "../Modals/Modal";
 import { useApplicantContext } from "../../Pages/ApplicantForm";
 import { useNavigate } from "react-router-dom";
-// import { z } from "zod";
-// import { zodResolver } from "@hookform/resolvers/zod";
-
-// const formSchema = z.object({
-//     applicant: z.object({
-//         firstname: z.string(),
-//         lastname: z.string(),
-//         agent: z.string(),
-//         gender: z.string(),
-//         phone_number: z.string(),
-//     }),
-//     address: z.object({
-//         region: z.string(),
-//         subcity_zone: z.string(),
-//         woreda: z.string(),
-//         house_no: z.string(),
-//     }),
-//     passport: z.object({
-//         passport_no: z.string(),
-//         place_of_birth: z.string(),
-//         place_of_issue: z.string(),
-//         date_of_birth: z.string(),
-//         date_of_issue: z.string(),
-//         date_of_expiry: z.string(),
-//     }),
-//     relative: z.object({
-//         fullname: z.string(),
-//         relative_phone: z.string(),
-//         kinship: z.string(),
-//     }),
-//     info: z.object({
-//         height: z.string(),
-//         weight: z.string(),
-//         martial_status: z.string(),
-//         no_of_children: z.string(),
-//         relegion: z.string(),
-//         work_exp: z.string(),
-//         english: z.string(),
-//         arabic: z.string(),
-//         skills: z.object({
-//             ironing: z.boolean(),
-//             sewing: z.boolean(),
-//             baby_sitting: z.boolean(),
-//             arabic_cooking: z.boolean(),
-//             cleaning: z.boolean(),
-//             washing: z.boolean(),
-//         }),
-//     }),
-// });
-
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { validateDOB } from "../../Helpers/utils";
+import { genericMutation } from "../../Helpers/fetchers";
+import { Button } from "@mui/material";
 function ApplicantInfoField() {
-    const { isEditing, applicant, setApplicant } = useApplicantContext();
+    const { isEditing, applicant, id } = useApplicantContext();
     const { url, authToken } = useAuthContext();
-    const hookform = useForm({
-        defaultValues: { applicant: null },
-    });
+    const hookform = useForm();
     const { errors } = hookform.formState;
     const navigate = useNavigate();
-
-    const onNewSubmit = async (data) => {
-        const response = await fetch(`${url}/enat/v1/applicants`, {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${authToken}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(data),
-        });
-        const apiData = await response.json();
-        if (response.status === 409) {
-            hookform.setError(
-                "passport.passport_no",
-                {
-                    type: "custom",
-                    message: "Passport number already exists in the database",
+    useEffect(() => {
+        hookform.reset();
+        if (isEditing) {
+            hookform.reset({
+                applicant: {
+                    reference_no: applicant?.reference_no,
+                    application_no: applicant?.application_no,
+                    fullname: applicant?.fullname,
+                    gender: applicant?.gender,
+                    phone_number: applicant?.phone_number,
+                    agent: applicant?.agent,
+                    medical_place: applicant?.medical_place,
+                    labour_id: applicant?.labour_id,
+                    mols: applicant?.mols,
+                    address: applicant?.Address,
+                    passport: applicant?.Passport,
+                    relative: applicant?.Relative,
+                    info: applicant?.Info,
                 },
-                { shouldFocus: true }
-            );
-            console.log("reached");
+            });
         }
-        if (response.status === 201) {
-            setApplicant({ applicantInfo: apiData });
-            console.log(apiData);
-            navigate(`/applicants/edit/${apiData.applicant.reference_no}`);
-        }
-    };
-    const onEditSubmit = async (data) => {
-        console.log("edititng");
+    }, [applicant]);
+    const mutation = useMutation({
+        mutationFn: genericMutation,
+        onSuccess: (data) => {
+            navigate(`/applicants`);
+            toast.success(`Successfully ${isEditing ? "Edited" : "Added"}`);
+        },
+        onError: (error) => {
+            if (error.statusCode === 409) {
+                hookform.setError(
+                    "applicant.passport.passport_no",
+                    {
+                        type: "custom",
+                        message:
+                            "Passport number already exists in the database",
+                    },
+                    { shouldFocus: true }
+                );
+            } else {
+                toast.error(error?.message);
+            }
+        },
+    });
+    const onSubmit = (data) => {
+        mutation.mutate({
+            baseURL: url,
+            token: authToken,
+            endpoint: isEditing ? `applicants/${id}` : "applicants",
+            method: isEditing ? "PATCH" : "POST",
+            payload: data,
+        });
     };
     return (
         <div className="">
             <FormProvider {...hookform}>
-                <form
-                    onSubmit={hookform.handleSubmit(
-                        isEditing ? onEditSubmit : onNewSubmit
-                    )}
-                    noValidate
-                >
+                <form onSubmit={hookform.handleSubmit(onSubmit)} noValidate>
                     <fieldset>
                         <div className="p-4 grid md:grid-cols-3 md:gap-4">
-                            <FormInput
-                                id={"applicant.firstname"}
-                                placeholder={"John"}
-                                label={"First Name"}
-                                formErrorMessage={
-                                    errors.applicant?.firstname?.message
-                                }
-                                formOptions={{
-                                    required: {
-                                        value: true,
-                                        message: "First name is required",
-                                    },
-                                }}
-                            />
-                            <FormInput
-                                id={"applicant.lastname"}
-                                placeholder={"Doe"}
-                                label={"Last Name"}
-                                formErrorMessage={
-                                    errors.applicant?.lastname?.message
-                                }
-                                formOptions={{
-                                    required: {
-                                        value: true,
-                                        message: "Last name is required",
-                                    },
-                                }}
-                            />
-                            <FormInput
+                            <div className="md:col-span-2">
+                                <FormInput
+                                    id={"applicant.fullname"}
+                                    placeholder={"John"}
+                                    label={"Full name"}
+                                    formErrorMessage={
+                                        errors.applicant?.firstname?.message
+                                    }
+                                    formOptions={{
+                                        required: {
+                                            value: true,
+                                            message: "First name is required",
+                                        },
+                                    }}
+                                />
+                            </div>
+
+                            {isEditing &&
+                                applicant?.Statuses.find(
+                                    (status) => status.status === "SELECTED"
+                                ) && (
+                                    <FormSelect
+                                        placeholder={"Change MoLS status"}
+                                        id={"applicant.mols"}
+                                        label={"MoLS"}
+                                        options={["SUBMITTED", "APPROVED"]}
+                                        formErrorMessage={
+                                            errors.applicant?.gender?.message
+                                        }
+                                    />
+                                )}
+                            <FormSelect
                                 id={"applicant.agent"}
-                                placeholder={""}
+                                placeholder={"Select an agent"}
                                 label={"Agent"}
+                                defaultValue={"NOT SENT"}
+                                isDisabled={applicant?.Visa}
+                                options={[
+                                    "NOT SENT",
+                                    "ANAM SHAKR RESOURCES COMPANY",
+                                    "IBRAHEM ABDULLAH ALMAJED RECRUITMENT OFFICE",
+                                    "RAED ALMUSHARRAF RECRUITMENT",
+                                    "SMART GLOBAL DOMESTIC WORKERS SERVICE CENTER LLC",
+                                    "DANA AL-TAWASH DOMESTIC WORKERS SERVICES CENTER",
+                                    "ALREAYA FOR DOMESTIC WORKERS SERVICES",
+                                    "ZANAH CENTER FOR MANPOWER RECRUITMENT",
+                                ]}
                                 formErrorMessage={
                                     errors.applicant?.agent?.message
                                 }
+                                formOptions={{
+                                    required: {
+                                        value: true,
+                                        message: "Agent is required",
+                                    },
+                                    validate: (v) =>
+                                        v === "NONE"
+                                            ? "Agent is required"
+                                            : true,
+                                }}
                             />
                             <FormSelect
                                 id={"applicant.gender"}
@@ -154,6 +146,10 @@ function ApplicantInfoField() {
                                     errors.applicant?.gender?.message
                                 }
                                 formOptions={{
+                                    validate: (v) =>
+                                        v === "NONE"
+                                            ? "Gender is required"
+                                            : true,
                                     required: {
                                         value: true,
                                         message: "Gender is required",
@@ -169,36 +165,37 @@ function ApplicantInfoField() {
                                 }
                             />
                             <FormInput
-                                id={"address.region"}
+                                id={"applicant.labour_id"}
                                 placeholder={""}
-                                label={"Region"}
+                                label={"Labour id"}
                                 formErrorMessage={
-                                    errors.address?.region?.message
+                                    errors.applicant?.labour_id?.message
                                 }
                             />
 
                             <FormInput
-                                id={"address.subcity_zone"}
+                                id={"applicant.address.region"}
+                                placeholder={""}
+                                label={"Region"}
+                                formErrorMessage={
+                                    errors.applicant?.address?.region?.message
+                                }
+                            />
+
+                            <FormInput
+                                id={"applicant.address.subcity_zone"}
                                 placeholder={""}
                                 label={"Subcity Zone"}
                                 formErrorMessage={
-                                    errors.address?.region?.message
+                                    errors.applicant?.address?.region?.message
                                 }
                             />
                             <FormInput
-                                id={"address.woreda"}
+                                id={"applicant.address.woreda"}
                                 placeholder={""}
                                 label={"Woreda"}
                                 formErrorMessage={
-                                    errors.address?.region?.message
-                                }
-                            />
-                            <FormInput
-                                id={"address.house_no"}
-                                placeholder={""}
-                                label={"House no"}
-                                formErrorMessage={
-                                    errors.address?.region?.message
+                                    errors.applicant?.address?.region?.message
                                 }
                             />
                         </div>
@@ -211,11 +208,12 @@ function ApplicantInfoField() {
                         </div>
                         <div className="p-4 grid md:grid-cols-3 md:gap-4">
                             <FormInput
-                                id={"passport.passport_no"}
+                                id={"applicant.passport.passport_no"}
                                 placeholder={""}
                                 label={"Passport Number"}
                                 formErrorMessage={
-                                    errors.passport?.passport_no?.message
+                                    errors.applicant?.passport?.passport_no
+                                        ?.message
                                 }
                                 formOptions={{
                                     required: {
@@ -229,11 +227,12 @@ function ApplicantInfoField() {
                                 }}
                             />
                             <FormInput
-                                id={"passport.place_of_birth"}
+                                id={"applicant.passport.place_of_birth"}
                                 placeholder={""}
                                 label={"Place of Birth"}
                                 formErrorMessage={
-                                    errors.passport?.place_of_birth?.message
+                                    errors.applicant?.passport?.place_of_birth
+                                        ?.message
                                 }
                                 formOptions={{
                                     required: {
@@ -243,11 +242,12 @@ function ApplicantInfoField() {
                                 }}
                             />
                             <FormInput
-                                id={"passport.place_of_issue"}
+                                id={"applicant.passport.place_of_issue"}
                                 placeholder={""}
                                 label={"Place of Issue"}
                                 formErrorMessage={
-                                    errors.passport?.place_of_issue?.message
+                                    errors.applicant?.passport?.place_of_issue
+                                        ?.message
                                 }
                                 formOptions={{
                                     required: {
@@ -257,12 +257,13 @@ function ApplicantInfoField() {
                                 }}
                             />
                             <FormInput
-                                id={"passport.date_of_expiry"}
+                                id={"applicant.passport.date_of_expiry"}
                                 type={"date"}
                                 placeholder={""}
                                 label={"Date of Expiry"}
                                 formErrorMessage={
-                                    errors.passport?.date_of_expiry?.message
+                                    errors.applicant?.passport?.date_of_expiry
+                                        ?.message
                                 }
                                 formOptions={{
                                     required: {
@@ -272,27 +273,30 @@ function ApplicantInfoField() {
                                 }}
                             />
                             <FormInput
-                                id={"passport.date_of_birth"}
+                                id={"applicant.passport.date_of_birth"}
                                 type={"date"}
                                 placeholder={""}
                                 label={"Date of Birth"}
                                 formErrorMessage={
-                                    errors.passport?.date_of_birth?.message
+                                    errors.applicant?.passport?.date_of_birth
+                                        ?.message
                                 }
                                 formOptions={{
                                     required: {
                                         value: true,
                                         message: "Date of birth is required",
                                     },
+                                    validate: validateDOB,
                                 }}
                             />
                             <FormInput
-                                id={"passport.date_of_issue"}
+                                id={"applicant.passport.date_of_issue"}
                                 type={"date"}
                                 placeholder={""}
                                 label={"Date of Issue"}
                                 formErrorMessage={
-                                    errors.passport?.date_of_issue?.message
+                                    errors.applicant?.passport?.date_of_issue
+                                        ?.message
                                 }
                                 formOptions={{
                                     required: {
@@ -311,27 +315,29 @@ function ApplicantInfoField() {
                         </div>
                         <div className="p-4 gap-4 grid md:grid-cols-3 md:gap-4">
                             <FormInput
-                                id={"relative.fullname"}
+                                id={"applicant.relative.fullname"}
                                 placeholder={""}
                                 label={"Full name"}
                                 formErrorMessage={
-                                    errors.relative?.fullname?.message
+                                    errors.applicant?.relative?.fullname
+                                        ?.message
                                 }
                             />
                             <FormInput
-                                id={"relative.relative_phone"}
+                                id={"applicant.relative.relative_phone"}
                                 placeholder={""}
                                 label={"Phone number"}
                                 formErrorMessage={
-                                    errors.relative?.relative_phone?.message
+                                    errors.applicant?.relative?.relative_phone
+                                        ?.message
                                 }
                             />
                             <FormInput
-                                id={"relative.kinship"}
+                                id={"applicant.relative.kinship"}
                                 placeholder={""}
                                 label={"Kinship"}
                                 formErrorMessage={
-                                    errors.relative?.kinship?.message
+                                    errors.applicant?.relative?.kinship?.message
                                 }
                             />
                         </div>
@@ -344,19 +350,23 @@ function ApplicantInfoField() {
                         </div>
                         <div className="p-4 gap-4 grid md:grid-cols-4 md:gap-4">
                             <FormInput
-                                id={"info.height"}
+                                id={"applicant.info.height"}
                                 placeholder={""}
                                 label={"Height"}
-                                formErrorMessage={errors.info?.height?.message}
+                                formErrorMessage={
+                                    errors.applicant?.info?.height?.message
+                                }
                             />
                             <FormInput
-                                id={"info.weight"}
+                                id={"applicant.info.weight"}
                                 placeholder={""}
                                 label={"Weight"}
-                                formErrorMessage={errors.info?.weight?.message}
+                                formErrorMessage={
+                                    errors.applicant?.info?.weight?.message
+                                }
                             />
                             <FormSelect
-                                id={"info.martial_status"}
+                                id={"applicant.info.martial_status"}
                                 placeholder={""}
                                 label={"Martial Status"}
                                 options={[
@@ -366,7 +376,8 @@ function ApplicantInfoField() {
                                     "Widowed",
                                 ]}
                                 formErrorMessage={
-                                    errors.info?.martial_status?.message
+                                    errors.applicant?.info?.martial_status
+                                        ?.message
                                 }
                                 formOptions={{
                                     required: {
@@ -376,76 +387,89 @@ function ApplicantInfoField() {
                                 }}
                             />
                             <FormInput
-                                id={"info.no_of_children"}
+                                id={"applicant.info.no_of_children"}
                                 placeholder={""}
                                 label={"Number of Children"}
+                                type={"number"}
                                 formErrorMessage={
-                                    errors.info?.no_of_children?.message
+                                    errors.applicant?.info?.no_of_children
+                                        ?.message
                                 }
                             />
                             <FormInput
-                                id={"info.relegion"}
+                                id={"applicant.info.relegion"}
                                 placeholder={""}
                                 label={"Relegion"}
                                 formErrorMessage={
-                                    errors.info?.relegion?.message
+                                    errors.applicant?.info?.relegion?.message
                                 }
                             />
                             <FormInput
-                                id={"info.work_exp"}
+                                id={"applicant.info.work_exp"}
                                 placeholder={""}
+                                type={"number"}
                                 label={"Work Experiance"}
                                 formErrorMessage={
-                                    errors.info?.work_exp?.message
+                                    errors.applicant?.info?.work_exp?.message
                                 }
                             />
                             <FormSelect
-                                id={"info.english"}
+                                id={"applicant.info.english"}
                                 label={"English"}
                                 options={["Poor", "Fair", "Good", "Proficient"]}
-                                formErrorMessage={errors.info?.english?.message}
+                                formErrorMessage={
+                                    errors.applicant?.info?.english?.message
+                                }
                             />
                             <FormSelect
-                                id={"info.arabic"}
+                                id={"applicant.info.arabic"}
                                 label={"Arabic"}
                                 options={["Poor", "Fair", "Good", "Proficient"]}
-                                formErrorMessage={errors.info?.arabic?.message}
+                                formErrorMessage={
+                                    errors.applicant?.info?.arabic?.message
+                                }
                             />
                             <div className="md:col-span-4 grid md:grid-cols-6">
                                 <FormCheckbox
-                                    id="info.skills.ironing"
+                                    id="applicant.info.skills.ironing"
                                     label="Ironing"
                                 />
                                 <FormCheckbox
-                                    id="info.skills.sewing"
+                                    id="applicant.info.skills.sewing"
                                     label="Sewing"
                                 />
                                 <FormCheckbox
-                                    id="info.skills.baby_sitting"
+                                    id="applicant.info.skills.baby_sitting"
                                     label="B.Sitting"
                                 />
                                 <FormCheckbox
-                                    id="info.skills.arabic_cooking"
+                                    id="applicant.info.skills.arabic_cooking"
                                     label="A.Cooking"
                                 />
                                 <FormCheckbox
-                                    id="info.skills.cleaning"
+                                    id="applicant.info.skills.cleaning"
                                     label="Cleaning"
                                 />
                                 <FormCheckbox
-                                    id="info.skills.washing"
+                                    id="applicant.info.skills.washing"
                                     label="Washing"
                                 />
                             </div>
                         </div>
                     </fieldset>
-                    <div className="p-4">
+                    <div className="p-4 w-1/2 lg:w-1/3">
                         <Button
-                            isDisabled={!hookform.formState.isDirty}
                             type={"submit"}
-                            className={""}
+                            variant="outlined"
+                            color="brand"
+                            size="large"
+                            fullWidth
+                            disabled={
+                                !hookform.formState.isDirty ||
+                                mutation.isPending
+                            }
                         >
-                            Submit
+                            {isEditing ? "Save" : "Create"}
                         </Button>
                     </div>
                 </form>

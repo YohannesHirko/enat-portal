@@ -1,3 +1,11 @@
+export class HTTPError extends Error {
+    constructor(message, statusCode, data) {
+        super(message);
+        this.name = "HTTPError";
+        this.statusCode = statusCode;
+        this.data = data;
+    }
+}
 const ERROR_MESSAGES = {
     AUTH001: "Account not found. Please check your email or register.",
     AUTH002: "Incorrect password. Please try again.",

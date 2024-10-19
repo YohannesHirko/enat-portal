@@ -1,12 +1,16 @@
 import React, { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { Navigate, NavLink } from "react-router-dom";
 import FormInput from "../Form/FormInput";
 import { FormProvider, useForm, handleSubmit } from "react-hook-form";
 import { useAuthContext } from "../../Contexts/AuthContext";
-import Button from "../Button";
+import Button from "../Globals/Button";
 import { string, z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { DevTool } from "@hookform/devtools";
+import { useMutation } from "@tanstack/react-query";
+import { HTTPError } from "../../Helpers/errorHandler";
+import { toast } from "sonner";
+import { genericMutation } from "../../Helpers/fetchers";
 
 const schema = z
     .object({
@@ -28,36 +32,35 @@ const schema = z
     });
 
 function SignupForm() {
-    const hookform = useForm({ resolver: zodResolver(schema) });
-    const { url, setAuthToken } = useAuthContext();
-    const [errorCode, setErrorCode] = useState(null);
+    const { url, authToken } = useAuthContext();
+    const mutation = useMutation({ mutationFn: genericMutation });
     const onSubmit = async (data) => {
-        setErrorCode(null);
-        const response = await fetch(`${url}/enat/v1/auth/signup`, {
+        mutation.mutate({
+            baseURL: url,
+            token: authToken,
+            endpoint: `user/createuser`,
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(data),
+            payload: data,
         });
-        const apiData = await response.json();
-        console.log(apiData);
-        if (response.status !== 201) {
-            setErrorCode(apiData.errorCode);
-            console.log(errorCode);
-        }
-        setAuthToken(apiData.token);
-        localStorage.setItem("jwtToken", apiData.token);
     };
+    const hookform = useForm({ resolver: zodResolver(schema) });
+    if (mutation.isError) {
+        toast.error(mutation.error?.message);
+    }
+    if (mutation.isSuccess) {
+        toast.success("Successfully registered a new useer!");
+        return <Navigate to="/settings/employees"></Navigate>;
+    }
+
     return (
-        <div className="w-full p-4 bg-white border border-gray-200 rounded-lg shadow sm:p-6 md:p-8 dark:bg-gray-800 dark:border-gray-700">
+        <div className="bg-white rounded-lg dark:bg-gray-800 w-2/3 min-w-96">
             <FormProvider {...hookform}>
                 <form
                     className="space-y-6"
                     onSubmit={hookform.handleSubmit(onSubmit)}
                 >
                     <h5 className="mb-10 text-2xl font-extrabold text-gray-900 dark:text-white">
-                        Sign up
+                        Register new user
                     </h5>
 
                     <FormInput
@@ -66,9 +69,6 @@ function SignupForm() {
                         label={"Email address"}
                         type={"email"}
                         isDisabled={hookform.formState.isSubmitting}
-                        errorCode={
-                            ["AUTH007"].includes(errorCode) ? errorCode : null
-                        }
                         formErrorMessage={
                             hookform.formState.errors.email
                                 ? hookform.formState.errors.email.message
@@ -131,15 +131,6 @@ function SignupForm() {
                     >
                         Register new account
                     </Button>
-                    <div className="text-sm font-medium text-gray-500 dark:text-gray-300">
-                        Have an account?{" "}
-                        <NavLink
-                            to="/auth/signin"
-                            className="text-blue-700 hover:underline dark:text-blue-500"
-                        >
-                            Sign in
-                        </NavLink>
-                    </div>
                 </form>
             </FormProvider>
             <DevTool control={hookform.control} />

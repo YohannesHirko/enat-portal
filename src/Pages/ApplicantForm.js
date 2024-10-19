@@ -2,44 +2,71 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { TabNav } from "../Components";
 import { Outlet, useNavigate, useParams } from "react-router-dom";
 import { useAuthContext } from "../Contexts/AuthContext";
+import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
+import { genericFetcher } from "../Helpers/fetchers";
+
 const ApplicantContext = createContext();
+const NewLinks = [
+    {
+        link: "info",
+        name: "Applicant",
+    },
+];
+const EditLinks = [
+    {
+        link: `info`,
+        name: "Applicant",
+    },
+    {
+        link: `visa`,
+        name: "Visa",
+    },
+    {
+        link: `ticket`,
+        name: "Ticket",
+    },
+    {
+        link: `status`,
+        name: "Statuses",
+    },
+];
+
 function ApplicantForm({ isEditing }) {
+    const [applicant, setApplicant] = useState(null);
     const { url, authToken } = useAuthContext();
     const navigate = useNavigate();
-    const [applicant, setApplicant] = useState(null);
     const { id } = useParams();
-    useEffect(() => {
-        async function fetchUser() {
-            if (!applicant) {
-                try {
-                    const response = await fetch(
-                        `${url}/enat/v1/applicants/${id}`,
-                        {
-                            headers: {
-                                Authorization: `Bearer ${authToken}`,
-                            },
-                        }
-                    );
-                    const data = await response.json();
-                    if (response.status !== 200) {
-                        console.log(response);
-                    }
-                    console.log(data);
-                    setApplicant(data);
-                } catch (error) {
-                    console.log(error);
-                }
-            }
-            return;
-        }
-        fetchUser();
+    const {
+        data: applicantData,
+        error,
+        isError,
+        isLoading,
+        isSuccess,
+    } = useQuery({
+        queryKey: ["applicant", id],
+        queryFn: () =>
+            genericFetcher({
+                baseURL: url,
+                endpoint: `applicants/${id}`,
+                token: authToken,
+            }),
+        enabled: isEditing,
     });
+    useEffect(() => {
+        if (isSuccess && !isLoading) {
+            setApplicant(applicantData.applicant);
+        } else if (!isLoading && isError) {
+            toast.error(applicantData?.message || error.message);
+            setApplicant(null);
+            navigate(`/applicants`);
+        }
+    }, [applicantData, isError, isSuccess, isLoading]);
+
     return (
-        <ApplicantContext.Provider
-            value={{ isEditing, applicant, setApplicant }}
-        >
+        <ApplicantContext.Provider value={{ isEditing, id, applicant }}>
             <div className=" border-2 border-gray-200 rounded-lg dark:border-gray-700 mt-14">
-                <TabNav />
+                <TabNav links={isEditing ? EditLinks : NewLinks} />
                 <Outlet />
             </div>
         </ApplicantContext.Provider>

@@ -3,15 +3,25 @@ import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./Layouts/App";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { ApplicantForm, Applicants } from "./Pages";
-import Content from "./Content";
+import {
+    ApplicantForm,
+    Applicants,
+    Archives,
+    Dashboard,
+    Issues,
+    Reports,
+    Settings,
+} from "./Pages";
 import Auth from "./Layouts/Auth";
 import {
     ApplicantInfoField,
     ApplicantStatuses,
     ApplicantTicketField,
     ApplicantVisaField,
+    EmployeesSettings,
     ForgetForm,
+    GeneralSettings,
+    ProfileSettings,
     ResetForm,
     SigninForm,
     SignupForm,
@@ -20,9 +30,9 @@ import AuthProvider from "./Contexts/AuthContext";
 import ProtectedRoute from "./Components/Auth/ProtectedRoute";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import ProfilePage from "./Pages/ProfilePage";
-
-const queryClient = new QueryClient();
+import AppContextProvider from "./Contexts/AppContextProvider";
+import SettingsProvider from "./Contexts/SettingsContext";
+import Content from "./Content";
 const router = createBrowserRouter([
     {
         path: "/",
@@ -33,8 +43,8 @@ const router = createBrowserRouter([
         ),
         children: [
             {
-                path: "dashboard",
-                element: <Content />,
+                path: "/",
+                element: <Dashboard />,
             },
             {
                 path: "applicants",
@@ -45,10 +55,6 @@ const router = createBrowserRouter([
                 element: <ApplicantForm isEditing={false} />,
                 children: [
                     {
-                        index: true,
-                        element: <ApplicantInfoField />,
-                    },
-                    {
                         path: "info",
                         element: <ApplicantInfoField />,
                     },
@@ -58,10 +64,6 @@ const router = createBrowserRouter([
                 path: "applicants/edit/:id",
                 element: <ApplicantForm isEditing={true} />,
                 children: [
-                    {
-                        index: true,
-                        element: <ApplicantInfoField />,
-                    },
                     {
                         path: "info",
                         element: <ApplicantInfoField />,
@@ -81,8 +83,38 @@ const router = createBrowserRouter([
                 ],
             },
             {
-                path: "profile",
-                element: <ProfilePage />,
+                path: "reports",
+                element: <Reports />,
+            },
+            {
+                path: "issues",
+                element: <Issues />,
+            },
+            {
+                path: "settings",
+                element: <Settings />,
+                children: [
+                    {
+                        path: "general",
+                        element: <GeneralSettings />,
+                    },
+                    {
+                        path: "profile",
+                        element: <ProfileSettings />,
+                    },
+                    {
+                        path: "employees",
+                        element: <EmployeesSettings />,
+                    },
+                    {
+                        path: "employees/create",
+                        element: <SignupForm />,
+                    },
+                ],
+            },
+            {
+                path: "archives",
+                element: <Archives />,
             },
         ],
     },
@@ -114,15 +146,20 @@ const router = createBrowserRouter([
         ],
     },
 ]);
+const queryClient = new QueryClient();
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
     <React.StrictMode>
-        <QueryClientProvider client={queryClient}>
-            <AuthProvider>
-                <RouterProvider router={router} />
-            </AuthProvider>
-            <ReactQueryDevtools initialIsOpen={false} />
-        </QueryClientProvider>
+        <AuthProvider>
+            <QueryClientProvider client={queryClient}>
+                <AppContextProvider>
+                    <SettingsProvider>
+                        <RouterProvider router={router} />
+                    </SettingsProvider>
+                </AppContextProvider>
+                <ReactQueryDevtools initialIsOpen={false} />
+            </QueryClientProvider>
+        </AuthProvider>
     </React.StrictMode>
 );
 

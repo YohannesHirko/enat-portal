@@ -1,15 +1,53 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import FormInput from "./FormInput";
-import FormSelect from "./FormSelect";
 import { FormProvider, useForm } from "react-hook-form";
 import { DevTool } from "@hookform/devtools";
-import Button from "../Button";
+import { useApplicantContext } from "../../Pages/ApplicantForm";
+import { useMutation } from "@tanstack/react-query";
+import { useAuthContext } from "../../Contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { genericMutation } from "../../Helpers/fetchers";
+import { Button } from "@mui/material";
 
 function ApplicantVisaField() {
+    const [editingVisa, setEditingVisa] = useState(false);
+    const { url, authToken } = useAuthContext();
+    const { isEditing, applicant, id } = useApplicantContext();
     const hookform = useForm();
     const { errors } = hookform.formState;
+    const navigate = useNavigate();
+    useEffect(() => {
+        if (isEditing && applicant?.Visa) {
+            setEditingVisa(true);
+            hookform.reset({
+                ...applicant.Visa,
+            });
+        } else if (!applicant?.Ticket) {
+            setEditingVisa(false);
+            hookform.reset();
+        }
+    }, [applicant, isEditing]);
+    const mutation = useMutation({
+        mutationFn: genericMutation,
+        onSuccess: (data) => {
+            navigate(`/applicants`);
+            toast.success(
+                `Successfully ${editingVisa ? "Edited" : "Added"} visa`
+            );
+        },
+        onError: (error) => {
+            toast.error(error?.message);
+        },
+    });
     const onSubmit = (data) => {
-        console.log(data);
+        mutation.mutate({
+            baseURL: url,
+            token: authToken,
+            endpoint: `applicants/${id}/visa`,
+            method: editingVisa ? "PATCH" : "POST",
+            payload: data,
+        });
     };
     return (
         <div className="">
@@ -51,18 +89,6 @@ function ApplicantVisaField() {
                                 }}
                             />
                             <FormInput
-                                id={"country"}
-                                placeholder={""}
-                                label={"Country"}
-                                formErrorMessage={errors.country?.message}
-                                formOptions={{
-                                    required: {
-                                        value: true,
-                                        message: "Country date is required",
-                                    },
-                                }}
-                            />
-                            <FormInput
                                 id={"sponsor_id"}
                                 placeholder={""}
                                 label={"Sponsor id"}
@@ -90,9 +116,19 @@ function ApplicantVisaField() {
                             />
                         </div>
                     </fieldset>
-                    <div className="p-4">
-                        <Button type={"submit"} className={""}>
-                            Submit
+                    <div className="p-4 w-1/2 lg:w-1/3">
+                        <Button
+                            type={"submit"}
+                            variant="outlined"
+                            color="brand"
+                            size="large"
+                            fullWidth
+                            disabled={
+                                !hookform.formState.isDirty ||
+                                mutation.isPending
+                            }
+                        >
+                            {editingVisa ? "Save" : "Create"}
                         </Button>
                     </div>
                 </form>

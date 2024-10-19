@@ -23,6 +23,7 @@ function FormInput({
                 {label}
             </label>
             <input
+                defaultValue={type === "number" ? 0 : ""}
                 disabled={isDisabled ? true : false}
                 type={type ? type : "text"}
                 placeholder={placeholder}

@@ -9,6 +9,7 @@ function FormSelect({
     errorCode,
     isDisabled,
     formOptions,
+    defaultValue,
     formErrorMessage,
 }) {
     const { register } = useFormContext();
@@ -17,7 +18,7 @@ function FormSelect({
     const errorState =
         "bg-red-50 border border-red-500 text-red-900 text-sm rounded-lg focus:ring-red-500 dark:bg-gray-700 focus:border-red-500 block w-full p-2.5 dark:text-red-500 dark:placeholder-red-500 dark:border-red-500";
     return (
-        <div className="mb-5">
+        <div className="mb-5 ">
             <label
                 htmlFor={id}
                 className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
@@ -25,13 +26,18 @@ function FormSelect({
                 {label}
             </label>
             <select
+                disabled={isDisabled ? isDisabled : false}
                 placeholder={placeholder}
                 id={id}
                 {...register(id, formOptions ? formOptions : {})}
                 className={
                     errorCode || formErrorMessage ? errorState : normalState
                 }
+                defaultValue={defaultValue ? defaultValue : "NONE"}
             >
+                <option value="NONE" disabled hidden>
+                    {placeholder ? placeholder : "Select one"}
+                </option>
                 {options ? (
                     options.map((option) => (
                         <option key={option} value={option}>

@@ -4,7 +4,7 @@ import FormInput from "../Form/FormInput";
 import { FormProvider, useForm } from "react-hook-form";
 import { useAuthContext } from "../../Contexts/AuthContext";
 import { IoMdMailUnread } from "react-icons/io";
-import Button from "../Button";
+import Button from "../Globals/Button";
 
 function ForgetForm() {
     const hookForm = useForm();
