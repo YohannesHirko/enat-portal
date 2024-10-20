@@ -7,6 +7,8 @@ import { genericFetcher } from "../Helpers/fetchers";
 import { useAuthContext } from "../Contexts/AuthContext";
 import { toast } from "sonner";
 import { formatISODate, getInitials } from "../Helpers/utils";
+import useRefreshToken from "../hooks/useRefreshToken";
+import { Button } from "@mui/material";
 function Dashboard() {
     const getPfp = (user_name) => {
         const [firstName, lastName] = user_name.split(" ");
@@ -182,8 +184,10 @@ function Dashboard() {
     if (query.isError) {
         toast.error(query.error.message);
     }
+    const refresh = useRefreshToken();
     return (
         <div className="mt-14">
+            <Button onClick={() => refresh()}>refresh</Button>
             <div className=" flex flex-col lg:grid gap-4 lg:grid-cols-3 lg:grid-rows-6 rounded-lg ">
                 <div className="flex h-32 lg:h-auto gap-4 lg:col-span-2">
                     <div className="flex flex-auto flex-col rounded-lg border border-gray-200 dark:border-gray-700">

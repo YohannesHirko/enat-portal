@@ -10,6 +10,7 @@ import { DevTool } from "@hookform/devtools";
 import { useMutation } from "@tanstack/react-query";
 import { genericMutation } from "../../Helpers/fetchers";
 import { toast } from "sonner";
+import axiosInstance from "../../api/axios";
 
 const schema = z.object({
     email: string().email(),
@@ -32,6 +33,24 @@ function SigninForm() {
             );
         },
     });
+    const handleSubmit = async (data) => {
+        try {
+            const response = axiosInstance.post(
+                "/auth/login",
+                JSON.stringify(data),
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    withCredentials: true,
+                }
+            );
+            console.log(JSON.stringify(response));
+            const accessToken = response?.data?.accessToken;
+        } catch (error) {
+            console.error(error);
+        }
+    };
     const onSubmit = async (data) => {
         mutation.mutate({
             baseURL: url,
