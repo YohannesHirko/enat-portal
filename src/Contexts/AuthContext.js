@@ -10,7 +10,7 @@ import React, {
 const AuthContext = createContext();
 
 export default function AuthProvider({ children }) {
-        const url = process.env.REACT_APP_PRODUCTION_URL;
+    const url = process.env.REACT_APP_PRODUCTION_URL;
     const [authToken, setAuthToken] = useState();
     const [currentUser, setCurrentUser] = useState(0);
     const handleLogout = () => {
@@ -18,6 +18,7 @@ export default function AuthProvider({ children }) {
         setCurrentUser(null);
         setAuthToken(null);
     };
+
     useEffect(() => {
         async function fetchUser() {
             const token = localStorage.getItem("jwtToken");
@@ -51,6 +52,7 @@ export default function AuthProvider({ children }) {
         }
         fetchUser();
     }, [authToken]);
+
     return (
         <AuthContext.Provider
             value={{
@@ -74,3 +76,4 @@ export function useAuthContext() {
     }
     return context;
 }
+

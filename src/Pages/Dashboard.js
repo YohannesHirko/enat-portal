@@ -9,63 +9,12 @@ import { toast } from "sonner";
 import { formatISODate, getInitials } from "../Helpers/utils";
 import useRefreshToken from "../hooks/useRefreshToken";
 import { Button } from "@mui/material";
+import { BarchartSkeleton, ListSkeleton } from "../Skeletons";
 function Dashboard() {
     const getPfp = (user_name) => {
         const [firstName, lastName] = user_name.split(" ");
         return getInitials(firstName, lastName);
     };
-    const data = [
-        {
-            period_start: "24-06-01",
-            "ALREAYA FOR DOMESTIC WORKERS SERVICES": 80,
-            "SMART GLOBAL DOMESTIC WORKERS SERVICE CENTER LLC": 50,
-            "ANAM SHAKR RESOURCES COMPANY": 57,
-            "IBRAHEM ABDULLAH ALMAJED RECRUITMENT OFFICE": 20,
-            "RAED ALMUSHARRAF RECRUITMENT": 23,
-            "ZANAH CENTER FOR MANPOWER RECRUITMENT": 37,
-            "DANA AL-TAWASH DOMESTIC WORKERS SERVICES CENTER": 72,
-        },
-        {
-            period_start: "24-06-08",
-            "ALREAYA FOR DOMESTIC WORKERS SERVICES": 36,
-            "SMART GLOBAL DOMESTIC WORKERS SERVICE CENTER LLC": 54,
-            "ANAM SHAKR RESOURCES COMPANY": 86,
-            "IBRAHEM ABDULLAH ALMAJED RECRUITMENT OFFICE": 66,
-            "RAED ALMUSHARRAF RECRUITMENT": 38,
-            "ZANAH CENTER FOR MANPOWER RECRUITMENT": 91,
-            "DANA AL-TAWASH DOMESTIC WORKERS SERVICES CENTER": 90,
-        },
-        {
-            period_start: "24-06-15",
-            "ALREAYA FOR DOMESTIC WORKERS SERVICES": 45,
-            "SMART GLOBAL DOMESTIC WORKERS SERVICE CENTER LLC": 65,
-            "ANAM SHAKR RESOURCES COMPANY": 46,
-            "IBRAHEM ABDULLAH ALMAJED RECRUITMENT OFFICE": 70,
-            "RAED ALMUSHARRAF RECRUITMENT": 92,
-            "ZANAH CENTER FOR MANPOWER RECRUITMENT": 14,
-            "DANA AL-TAWASH DOMESTIC WORKERS SERVICES CENTER": 39,
-        },
-        {
-            period_start: "24-06-22",
-            "ALREAYA FOR DOMESTIC WORKERS SERVICES": 16,
-            "SMART GLOBAL DOMESTIC WORKERS SERVICE CENTER LLC": 2,
-            "ANAM SHAKR RESOURCES COMPANY": 13,
-            "IBRAHEM ABDULLAH ALMAJED RECRUITMENT OFFICE": 98,
-            "RAED ALMUSHARRAF RECRUITMENT": 78,
-            "ZANAH CENTER FOR MANPOWER RECRUITMENT": 25,
-            "DANA AL-TAWASH DOMESTIC WORKERS SERVICES CENTER": 100,
-        },
-        {
-            period_start: "24-06-29",
-            "ALREAYA FOR DOMESTIC WORKERS SERVICES": 25,
-            "SMART GLOBAL DOMESTIC WORKERS SERVICE CENTER LLC": 54,
-            "ANAM SHAKR RESOURCES COMPANY": 0,
-            "IBRAHEM ABDULLAH ALMAJED RECRUITMENT OFFICE": 5,
-            "RAED ALMUSHARRAF RECRUITMENT": 80,
-            "ZANAH CENTER FOR MANPOWER RECRUITMENT": 4,
-            "DANA AL-TAWASH DOMESTIC WORKERS SERVICES CENTER": 46,
-        },
-    ];
     const [visaOnHand, setVisaOnHand] = useState([
         {
             id: "visa",
@@ -116,43 +65,10 @@ function Dashboard() {
             ],
         },
     ]);
-    const [agentPerformance, setAgentPerformance] = useState([
-        {
-            period_start: "00-00-00",
-            "ALREAYA FOR DOMESTIC WORKERS SERVICES": 0,
-            "SMART GLOBAL DOMESTIC WORKERS SERVICE CENTER LLC": 0,
-            "ANAM SHAKR RESOURCES COMPANY": 0,
-            "IBRAHEM ABDULLAH ALMAJED RECRUITMENT OFFICE": 0,
-            "RAED ALMUSHARRAF RECRUITMENT": 0,
-            "ZANAH CENTER FOR MANPOWER RECRUITMENT": 0,
-            "DANA AL-TAWASH DOMESTIC WORKERS SERVICES CENTER": 0,
-        },
-    ]);
-    const [ticketExpense, setTicketExpense] = useState([
-        {
-            period_start: "00-00-00",
-            total_spent: 0,
-        },
-    ]);
-    const [cvByCountry, setCvByCountry] = useState([
-        {
-            id: "Not Sent",
-            value: 1,
-        },
-        {
-            id: "Saudi Arabia",
-            value: 1,
-        },
-        {
-            id: "Dubai",
-            value: 1,
-        },
-        {
-            id: "Jordan",
-            value: 1,
-        },
-    ]);
-    const [latestEntries, setLatestEntries] = useState([]);
+    const [agentPerformance, setAgentPerformance] = useState(null);
+    const [ticketExpense, setTicketExpense] = useState(null);
+    const [cvByCountry, setCvByCountry] = useState(null);
+    const [latestEntries, setLatestEntries] = useState(null);
     const { userSettings } = useSettingsContext();
     const { url, authToken } = useAuthContext();
     const query = useQuery({
@@ -184,10 +100,9 @@ function Dashboard() {
     if (query.isError) {
         toast.error(query.error.message);
     }
-    const refresh = useRefreshToken();
+
     return (
         <div className="mt-14">
-            <Button onClick={() => refresh()}>refresh</Button>
             <div className=" flex flex-col lg:grid gap-4 lg:grid-cols-3 lg:grid-rows-6 rounded-lg ">
                 <div className="flex h-32 lg:h-auto gap-4 lg:col-span-2">
                     <div className="flex flex-auto flex-col rounded-lg border border-gray-200 dark:border-gray-700">
@@ -197,15 +112,15 @@ function Dashboard() {
                             </h1>
                             <div
                                 className={`flex items-center text-base font-semibold text-center ${
-                                    totalArrival[0].difference < 0
+                                    totalArrival[0]?.difference < 0
                                         ? "text-red-500 dark:text-red-500"
                                         : "text-green-500 dark:text-green-500"
                                 }`}
                             >
-                                {`${totalArrival[0].difference}%`}
+                                {`${totalArrival[0]?.difference}%` || "0%"}
                                 <LuArrowUp
                                     className={
-                                        totalArrival[0].difference < 0
+                                        totalArrival[0]?.difference < 0
                                             ? "rotate-180"
                                             : ""
                                     }
@@ -215,11 +130,18 @@ function Dashboard() {
                         <div className="flex flex-1 justify-between items-center px-4 ">
                             <div>
                                 <h5 className="leading-none text-3xl font-bold text-gray-900 dark:text-white pb-2">
-                                    {totalArrival[0].thisWeek}
+                                    {totalArrival[0]?.thisWeek || 0}
                                 </h5>
                             </div>
                             <div>
-                                <Areachart data={totalArrival} />
+                                {totalArrival?.data?.length > 1 ? (
+                                    <Areachart data={totalArrival} />
+                                ) : (
+                                    <p class="p-4 font-normal text-sm text-gray-700 dark:text-gray-400">
+                                        Not enough data avalilable to display
+                                        charts.
+                                    </p>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -230,15 +152,15 @@ function Dashboard() {
                             </h1>
                             <div
                                 className={`flex items-center text-base font-semibold text-center ${
-                                    visaOnHand[0].difference < 0
+                                    visaOnHand[0]?.difference < 0
                                         ? "text-red-500 dark:text-red-500"
                                         : "text-green-500 dark:text-green-500"
                                 }`}
                             >
-                                {`${visaOnHand[0].difference}%`}
+                                {`${visaOnHand[0]?.difference}%` || "0%"}
                                 <LuArrowUp
                                     className={
-                                        visaOnHand[0].difference < 0
+                                        visaOnHand[0]?.difference < 0
                                             ? "rotate-180"
                                             : ""
                                     }
@@ -248,11 +170,18 @@ function Dashboard() {
                         <div className="flex flex-1 justify-between items-center px-4 ">
                             <div>
                                 <h5 className="leading-none text-3xl font-bold text-gray-900 dark:text-white pb-2">
-                                    {visaOnHand[0].thisWeek}
+                                    {visaOnHand[0]?.thisWeek}
                                 </h5>
                             </div>
                             <div>
-                                <Areachart data={visaOnHand} />
+                                {visaOnHand?.data?.length > 1 ? (
+                                    <Areachart data={visaOnHand} />
+                                ) : (
+                                    <p class="p-4 font-normal text-sm text-gray-700 dark:text-gray-400">
+                                        Not enough data avalilable to display
+                                        charts.
+                                    </p>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -267,20 +196,28 @@ function Dashboard() {
                         </h1>
                     </div>
                     <div>
-                        <Barchart
-                            data={ticketExpense}
-                            keys={["total_spent"]}
-                            indexBy="period_start"
-                            yAxis={{
-                                legend: "Total spent in Birr",
-                                tickValues: false,
-                            }}
-                            options={{
-                                padding: 0.55,
-                                enableGridY: false,
-                                valueFormat: " >-$,",
-                            }}
-                        />
+                        {query.isLoading ? (
+                            <BarchartSkeleton />
+                        ) : ticketExpense?.length > 0 ? (
+                            <Barchart
+                                data={ticketExpense}
+                                keys={["total_spent"]}
+                                indexBy="period_start"
+                                yAxis={{
+                                    legend: "Total spent in Birr",
+                                    tickValues: false,
+                                }}
+                                options={{
+                                    padding: 0.55,
+                                    enableGridY: false,
+                                    valueFormat: " >-$,",
+                                }}
+                            />
+                        ) : (
+                            <p class="p-4 font-normal text-sm text-gray-700 dark:text-gray-400">
+                                Not enough data avalilable to display charts.
+                            </p>
+                        )}
                     </div>
                 </div>
                 <div className=" lg:col-span-2 lg:row-span-2 rounded-lg border border-gray-200 dark:border-gray-700">
@@ -293,26 +230,34 @@ function Dashboard() {
                         </h1>
                     </div>
                     <div>
-                        <Barchart
-                            data={agentPerformance}
-                            keys={[
-                                "ANAM SHAKR RESOURCES COMPANY",
-                                "IBRAHEM ABDULLAH ALMAJED RECRUITMENT OFFICE",
-                                "RAED ALMUSHARRAF RECRUITMENT",
-                                "SMART GLOBAL DOMESTIC WORKERS SERVICE CENTER LLC",
-                                "DANA AL-TAWASH DOMESTIC WORKERS SERVICES CENTER",
-                                "ALREAYA FOR DOMESTIC WORKERS SERVICES",
-                                "ZANAH CENTER FOR MANPOWER RECRUITMENT",
-                            ]}
-                            indexBy="period_start"
-                            options={{
-                                groupMode: "grouped",
-                            }}
-                            yAxis={{
-                                legend: "Visas",
-                                tickValues: false,
-                            }}
-                        />
+                        {query.isLoading ? (
+                            <BarchartSkeleton />
+                        ) : agentPerformance?.length > 0 ? (
+                            <Barchart
+                                data={agentPerformance}
+                                keys={[
+                                    "ANAM SHAKR RESOURCES COMPANY",
+                                    "IBRAHEM ABDULLAH ALMAJED RECRUITMENT OFFICE",
+                                    "RAED ALMUSHARRAF RECRUITMENT",
+                                    "SMART GLOBAL DOMESTIC WORKERS SERVICE CENTER LLC",
+                                    "DANA AL-TAWASH DOMESTIC WORKERS SERVICES CENTER",
+                                    "ALREAYA FOR DOMESTIC WORKERS SERVICES",
+                                    "ZANAH CENTER FOR MANPOWER RECRUITMENT",
+                                ]}
+                                indexBy="period_start"
+                                options={{
+                                    groupMode: "grouped",
+                                }}
+                                yAxis={{
+                                    legend: "Visas",
+                                    tickValues: false,
+                                }}
+                            />
+                        ) : (
+                            <p class="p-4 font-normal text-sm text-gray-700 dark:text-gray-400">
+                                Not enough data avalilable to display charts.
+                            </p>
+                        )}
                     </div>
                 </div>
                 <div className="lg:row-span-3 rounded-lg border border-gray-200 dark:border-gray-700">
@@ -325,7 +270,22 @@ function Dashboard() {
                         </h1>
                     </div>
                     <div>
-                        <Piechart data={cvByCountry} />
+                        {query.isLoading ? (
+                            <div
+                                role="status"
+                                className="flex justify-center w-ful p-6 border-gray-200 shadow animate-pulse md:p-6 dark:border-gray-700"
+                            >
+                                <div className="w-60 h-60 rounded-full bg-gray-200  dark:bg-gray-700"></div>
+
+                                <span className="sr-only">Loading...</span>
+                            </div>
+                        ) : cvByCountry?.length > 0 ? (
+                            <Piechart data={cvByCountry} />
+                        ) : (
+                            <p class="p-4 font-normal text-sm text-gray-700 dark:text-gray-400">
+                                Not enough data avalilable to display charts.
+                            </p>
+                        )}
                     </div>
                 </div>
                 <div className=" lg:col-span-2 lg:row-span-3 rounded-lg border border-gray-200 dark:border-gray-700">
@@ -336,40 +296,53 @@ function Dashboard() {
                     </div>
                     <div className="p-4">
                         <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-                            {latestEntries.map((status) => (
-                                <li
-                                    className="py-3 sm:py-4"
-                                    key={status.status_id}
-                                >
-                                    <div className="flex items-center">
-                                        <div className="flex-shrink-0">
-                                            <div className="relative inline-flex items-center justify-center w-10 h-10 overflow-hidden bg-gray-300 rounded-full dark:bg-gray-600 hover:border-2 hover:border-blue-700 ">
-                                                <span className="font-medium text-gray-600 dark:text-gray-300 hover:text-white">
-                                                    {getPfp(status.user_name)}
-                                                </span>
+                            {query.isLoading ? (
+                                <ListSkeleton />
+                            ) : latestEntries?.length > 0 ? (
+                                latestEntries.map((status) => (
+                                    <li
+                                        className="py-3 sm:py-4"
+                                        key={status.status_id}
+                                    >
+                                        <div className="flex items-center">
+                                            <div className="flex-shrink-0">
+                                                <div className="relative inline-flex items-center justify-center w-10 h-10 overflow-hidden bg-gray-300 rounded-full dark:bg-gray-600 hover:border-2 hover:border-blue-700 ">
+                                                    <span className="font-medium text-gray-600 dark:text-gray-300 hover:text-white">
+                                                        {getPfp(
+                                                            status.user_name
+                                                        )}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="flex-1 min-w-0 ms-4">
+                                                <p className="text-sm font-medium text-gray-900 truncate dark:text-white">
+                                                    {status.user_name}
+                                                </p>
+                                                <p className="text-sm text-gray-500 truncate dark:text-gray-400">
+                                                    {formatISODate(
+                                                        status.status_date
+                                                    )}
+                                                </p>
+                                            </div>
+                                            <div className="px-4">
+                                                <p className="leading-none text-sm font-bold text-gray-900 dark:text-white">
+                                                    {status.status}
+                                                </p>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400 pb-1">
+                                                    {
+                                                        status.applicant_reference_no
+                                                    }
+                                                </p>
                                             </div>
                                         </div>
-                                        <div className="flex-1 min-w-0 ms-4">
-                                            <p className="text-sm font-medium text-gray-900 truncate dark:text-white">
-                                                {status.user_name}
-                                            </p>
-                                            <p className="text-sm text-gray-500 truncate dark:text-gray-400">
-                                                {formatISODate(
-                                                    status.status_date
-                                                )}
-                                            </p>
-                                        </div>
-                                        <div className="px-4">
-                                            <p className="leading-none text-sm font-bold text-gray-900 dark:text-white">
-                                                {status.status}
-                                            </p>
-                                            <p className="text-xs text-gray-500 dark:text-gray-400 pb-1">
-                                                {status.applicant_reference_no}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </li>
-                            ))}
+                                    </li>
+                                ))
+                            ) : (
+                                <p class="p-4 font-normal text-sm text-gray-700 dark:text-gray-400">
+                                    Not enough data avalilable to display
+                                    charts.
+                                </p>
+                            )}
                         </ul>
                     </div>
                 </div>

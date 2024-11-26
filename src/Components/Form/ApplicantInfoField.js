@@ -397,11 +397,11 @@ function ApplicantInfoField() {
                                 }
                             />
                             <FormInput
-                                id={"applicant.info.relegion"}
+                                id={"applicant.info.worked_at"}
                                 placeholder={""}
-                                label={"Relegion"}
+                                label={"Worked at"}
                                 formErrorMessage={
-                                    errors.applicant?.info?.relegion?.message
+                                    errors.applicant?.info?.worked_at?.message
                                 }
                             />
                             <FormInput
@@ -411,6 +411,29 @@ function ApplicantInfoField() {
                                 label={"Work Experiance"}
                                 formErrorMessage={
                                     errors.applicant?.info?.work_exp?.message
+                                }
+                                formOptions={{
+                                    required: {
+                                        value: true,
+                                        message: "Experiance is required",
+                                    },
+                                    min: 0,
+                                    max: 40,
+                                }}
+                            />
+                            <FormSelect
+                                id={"applicant.info.relegion"}
+                                label={"Relegion"}
+                                options={[
+                                    "Muslim",
+                                    "Christian",
+                                    "Orthodox",
+                                    "Catholic",
+                                    "Protestant",
+                                    "Non-Muslim",
+                                ]}
+                                formErrorMessage={
+                                    errors.applicant?.info?.relegion?.message
                                 }
                             />
                             <FormSelect
