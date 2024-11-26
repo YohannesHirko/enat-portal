@@ -142,7 +142,7 @@ function ApplicantTicketField() {
                             />
                         </div>
                     </fieldset>
-                    <div className="p-4 w-1/2 lg:w-1/3">
+                    <div className="p-4 gap-4 grid md:grid-cols-2 md:gap-4">
                         <Button
                             type={"submit"}
                             variant="outlined"
@@ -155,6 +155,21 @@ function ApplicantTicketField() {
                             }
                         >
                             {editingTicket ? "Save" : "Create"}
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            color="error"
+                            disabled={!applicant?.Ticket}
+                            onClick={() =>
+                                mutation.mutate({
+                                    baseURL: url,
+                                    token: authToken,
+                                    endpoint: `applicants/${id}/ticket/${applicant.Ticket.ticket_id}`,
+                                    method: "DELETE",
+                                })
+                            }
+                        >
+                            Mark as cancelled
                         </Button>
                     </div>
                 </form>

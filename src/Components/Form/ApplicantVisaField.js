@@ -23,7 +23,7 @@ function ApplicantVisaField() {
             hookform.reset({
                 ...applicant.Visa,
             });
-        } else if (!applicant?.Ticket) {
+        } else if (!applicant?.Visa) {
             setEditingVisa(false);
             hookform.reset();
         }
@@ -116,7 +116,7 @@ function ApplicantVisaField() {
                             />
                         </div>
                     </fieldset>
-                    <div className="p-4 w-1/2 lg:w-1/3">
+                    <div className="p-4 gap-4 grid md:grid-cols-2 md:gap-4">
                         <Button
                             type={"submit"}
                             variant="outlined"
@@ -129,6 +129,21 @@ function ApplicantVisaField() {
                             }
                         >
                             {editingVisa ? "Save" : "Create"}
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            color="error"
+                            disabled={!applicant?.Visa}
+                            onClick={() =>
+                                mutation.mutate({
+                                    baseURL: url,
+                                    token: authToken,
+                                    endpoint: `applicants/${id}/visa`,
+                                    method: "DELETE",
+                                })
+                            }
+                        >
+                            Mark as cancelled
                         </Button>
                     </div>
                 </form>

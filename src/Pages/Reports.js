@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     DataGrid,
@@ -6,62 +6,25 @@ import {
     GridToolbarContainer,
     GridToolbarDensitySelector,
     GridToolbarExport,
-    GridToolbarQuickFilter,
     useGridApiRef,
 } from "@mui/x-data-grid";
 import { toast } from "sonner";
 import { useAuthContext } from "../Contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { genericFetcher } from "../Helpers/fetchers";
-import { calculateAge, formatISODate } from "../Helpers/utils";
+import { formatISODate } from "../Helpers/utils";
+import {
+    customIsOperator,
+    predefinedFilters,
+    statusBadgeColor,
+} from "../constants";
 
 const normalCSS =
     "inline-block p-4 rounded-t-lg hover:text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 dark:hover:text-gray-300";
 const activeCSS =
     "inline-block p-4 text-blue-600 bg-gray-100 rounded-t-lg active dark:bg-gray-800 dark:text-blue-500";
-const predefinedFilters = [
-    {
-        label: "Selected",
-        filterModel: {
-            items: [{ field: "status", operator: "is", value: "SELECTED" }],
-        },
-    },
-    {
-        label: "Submitted",
-        filterModel: {
-            items: [{ field: "status", operator: "is", value: "SUBMITTED" }],
-        },
-    },
-    {
-        label: "Approved",
-        filterModel: {
-            items: [{ field: "status", operator: "is", value: "APPROVED" }],
-        },
-    },
-    {
-        label: "Ticketed",
-        filterModel: {
-            items: [{ field: "status", operator: "is", value: "TICKETED" }],
-        },
-    },
-    {
-        label: "Arrived",
-        filterModel: {
-            items: [{ field: "status", operator: "is", value: "ARRIVED" }],
-        },
-    },
-];
+
 function Reports() {
-    const customIsOperator = {
-        label: "is",
-        value: "is",
-        getApplyFilterFn: (filterItem) => {
-            if (!filterItem.value) {
-                return null;
-            }
-            return (value) => value === filterItem.value;
-        },
-    };
     const apiRef = useGridApiRef();
     const { url, authToken } = useAuthContext();
     const [selectedButtonIndex, setSelectedButtonIndex] = useState(0);
@@ -81,6 +44,73 @@ function Reports() {
     if (reportQuery.isError) {
         toast.error(reportQuery.error.message);
     }
+    const rows = reportQuery.data?.applicants || [];
+
+    const columns = [
+        {
+            field: "created_at",
+            headerName: "Registered",
+            width: 150,
+            valueFormatter: (value) => {
+                return formatISODate(value);
+            },
+        },
+        { field: "reference_no", headerName: "Reference number", width: 150 },
+        { field: "fullname", headerName: "First name", width: 150 },
+        { field: "gender", headerName: "Gender", width: 80 },
+        { field: "relegion", headerName: "Relegion", width: 80 },
+        {
+            field: "status",
+            headerName: "Status",
+            width: 150,
+            align: "center",
+            type: "string",
+            filterOperators: [customIsOperator],
+            renderCell: (params) => {
+                return (
+                    <span
+                        className={`bg-${
+                            statusBadgeColor[params.value]
+                        }-100 text-${
+                            statusBadgeColor[params.value]
+                        }-800 text-xs font-bold me-2 px-2.5 py-0.5 rounded dark:bg-${
+                            statusBadgeColor[params.value]
+                        }-900 dark:text-${statusBadgeColor[params.value]}-300`}
+                    >
+                        {params.value}
+                    </span>
+                );
+            },
+        },
+
+        {
+            field: "id",
+            headerName: "Status Date",
+            width: 150,
+            valueFormatter: (value) => {
+                return formatISODate(value);
+            },
+        },
+        { field: "agent", headerName: "Agent", width: 150 },
+    ];
+    const handleRowClick = (params, event, details) => {
+        console.log(event?.target?.dataset?.field);
+        // if (params.id) {
+        //     navigate(`/applicants/edit/${params.id}/info`);
+        // } else {
+        //     toast.error("Can not get id from the clicked row");
+        // }
+    };
+    const getFilteredRowsCount = React.useCallback(
+        (filterModel) => {
+            const { filteredRowsLookup } =
+                apiRef.current.getFilterState(filterModel);
+            return Object.keys(filteredRowsLookup).filter(
+                (rowId) => filteredRowsLookup[rowId] === true
+            ).length;
+        },
+        [apiRef]
+    );
     function CustomToolbar() {
         return (
             <GridToolbarContainer>
@@ -137,78 +167,6 @@ function Reports() {
             </GridToolbarContainer>
         );
     }
-    console.log(reportQuery.data?.applicants);
-    const rows = reportQuery.data?.applicants || [];
-    const columns = [
-        {
-            field: "created_at",
-            headerName: "Registered",
-            width: 150,
-            valueFormatter: (value) => {
-                return formatISODate(value);
-            },
-        },
-        { field: "reference_no", headerName: "Reference number", width: 150 },
-        { field: "fullname", headerName: "First name", width: 150 },
-        { field: "gender", headerName: "Gender", width: 80 },
-        {
-            field: "status",
-            headerName: "Status",
-            width: 150,
-            align: "center",
-            type: "string",
-            filterOperators: [customIsOperator],
-            renderCell: (params) => {
-                const color = {
-                    AVAILABLE: "gray",
-                    SELECTED: "green",
-                    SUBMITTED: "indigo",
-                    APPROVED: "purple",
-                    TICKETED: "yellow",
-                    ARRIVED: "blue",
-                    INACTIVE: "red",
-                };
-                return (
-                    <span
-                        className={`bg-${color[params.value]}-100 text-${
-                            color[params.value]
-                        }-800 text-xs font-bold me-2 px-2.5 py-0.5 rounded dark:bg-${
-                            color[params.value]
-                        }-900 dark:text-${color[params.value]}-300`}
-                    >
-                        {params.value}
-                    </span>
-                );
-            },
-        },
-        {
-            field: "id",
-            headerName: "Status Date",
-            width: 150,
-            valueFormatter: (value) => {
-                return formatISODate(value);
-            },
-        },
-        { field: "agent", headerName: "Agent", width: 150 },
-    ];
-    const handleRowClick = (params, event, details) => {
-        console.log(event?.target?.dataset?.field);
-        if (params.id) {
-            navigate(`/applicants/edit/${params.id}/info`);
-        } else {
-            toast.error("Can not get id from the clicked row");
-        }
-    };
-    const getFilteredRowsCount = React.useCallback(
-        (filterModel) => {
-            const { filteredRowsLookup } =
-                apiRef.current.getFilterState(filterModel);
-            return Object.keys(filteredRowsLookup).filter(
-                (rowId) => filteredRowsLookup[rowId] === true
-            ).length;
-        },
-        [apiRef]
-    );
     useEffect(() => {
         apiRef.current.setFilterModel(predefinedFilters[0].filterModel);
         if (reportQuery.data?.applicants?.length === 0) {
@@ -227,7 +185,7 @@ function Reports() {
                     rows={rows}
                     columns={columns}
                     apiRef={apiRef}
-                    onRowClick={handleRowClick}
+                    // onRowClick={handleRowClick}
                     loading={reportQuery.isLoading}
                     initialState={{
                         sorting: {

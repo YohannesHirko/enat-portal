@@ -13,6 +13,9 @@ export default function SettingsProvider({ children }) {
                       ticketExpense: "week",
                       cvByCountry: "week",
                   },
+                  applicants: {
+                      showInactiveApplicants: false,
+                  },
               };
     });
     useEffect(() => {

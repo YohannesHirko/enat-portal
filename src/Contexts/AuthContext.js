@@ -10,14 +10,7 @@ import React, {
 const AuthContext = createContext();
 
 export default function AuthProvider({ children }) {
-    const url = "enatemploymentagency.com";
-    const axiosClient = useMemo(() => {
-        return axios.create({
-            baseURL: url,
-            headers: {},
-        });
-    }, []);
-
+    const url = process.env.REACT_APP_PRODUCTION_URL || "http://localhost:4000";
     const [authToken, setAuthToken] = useState();
     const [currentUser, setCurrentUser] = useState(0);
     const handleLogout = () => {
@@ -25,6 +18,7 @@ export default function AuthProvider({ children }) {
         setCurrentUser(null);
         setAuthToken(null);
     };
+
     useEffect(() => {
         async function fetchUser() {
             const token = localStorage.getItem("jwtToken");
@@ -58,6 +52,7 @@ export default function AuthProvider({ children }) {
         }
         fetchUser();
     }, [authToken]);
+
     return (
         <AuthContext.Provider
             value={{

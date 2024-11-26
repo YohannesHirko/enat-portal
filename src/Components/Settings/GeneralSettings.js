@@ -12,6 +12,9 @@ function GeneralSettings() {
     const [ticketExpense, setTicketExpense] = useState(
         userSettings?.reports?.ticketExpense || "week"
     );
+    const [showInactiveApplicants, setShowInactiveApplicants] = useState(
+        userSettings?.applicants?.showInactiveApplicants || false
+    );
 
     const handleReportSettings = (event, reportName) => {
         setAgentPerformance(
@@ -27,6 +30,20 @@ function GeneralSettings() {
             reports: {
                 ...prevState.reports,
                 [reportName]: event.target.value,
+            },
+        }));
+    };
+    const handleApplicantSettings = (event, settingName) => {
+        setShowInactiveApplicants(
+            settingName === "showInactiveApplicants"
+                ? event.target.value
+                : showInactiveApplicants
+        );
+        setUserSettings((prevState) => ({
+            ...prevState,
+            applicants: {
+                ...prevState.applicants,
+                [settingName]: event.target.value,
             },
         }));
     };
@@ -110,6 +127,35 @@ function GeneralSettings() {
                                 Yearly(6 Months)
                             </MenuItem>
                             <MenuItem value={"week"}>Monthly(4 Weeks)</MenuItem>
+                        </Select>
+                    </FormControl>
+                </div>
+            </section>
+            <section className="p-4 border-b border-gray-200 dark:border-gray-700 ">
+                <div className="flex items-center justify-between">
+                    <div className="text-gray-600 dark:text-gray-300">
+                        <p>Show inactive applicants</p>
+                        <p className="text-xs text"></p>
+                    </div>
+
+                    <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
+                        <InputLabel id="demo-select-small-label">
+                            Show Inactive
+                        </InputLabel>
+                        <Select
+                            labelId="demo-select-small-label"
+                            id="demo-select-small"
+                            value={showInactiveApplicants}
+                            label="Show Inactive"
+                            onChange={(event) =>
+                                handleApplicantSettings(
+                                    event,
+                                    "showInactiveApplicants"
+                                )
+                            }
+                        >
+                            <MenuItem value={true}>Yes</MenuItem>
+                            <MenuItem value={false}>No</MenuItem>
                         </Select>
                     </FormControl>
                 </div>
