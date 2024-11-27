@@ -62,7 +62,7 @@ function Reports() {
         {
             field: "status",
             headerName: "Status",
-            width: 150,
+            width: 170,
             align: "center",
             type: "string",
             filterOperators: [customIsOperator],

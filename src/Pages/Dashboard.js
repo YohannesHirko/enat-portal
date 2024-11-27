@@ -10,6 +10,7 @@ import { formatISODate, getInitials } from "../Helpers/utils";
 import useRefreshToken from "../hooks/useRefreshToken";
 import { Button } from "@mui/material";
 import { BarchartSkeleton, ListSkeleton } from "../Skeletons";
+import { getGridStringOperators } from "@mui/x-data-grid";
 function Dashboard() {
     const getPfp = (user_name) => {
         const [firstName, lastName] = user_name.split(" ");
@@ -137,7 +138,7 @@ function Dashboard() {
                                 {totalArrival?.data?.length > 1 ? (
                                     <Areachart data={totalArrival} />
                                 ) : (
-                                    <p class="p-4 font-normal text-sm text-gray-700 dark:text-gray-400">
+                                    <p className="p-4 font-normal text-sm text-gray-700 dark:text-gray-400">
                                         Not enough data avalilable to display
                                         charts.
                                     </p>
@@ -177,7 +178,7 @@ function Dashboard() {
                                 {visaOnHand?.data?.length > 1 ? (
                                     <Areachart data={visaOnHand} />
                                 ) : (
-                                    <p class="p-4 font-normal text-sm text-gray-700 dark:text-gray-400">
+                                    <p className="p-4 font-normal text-sm text-gray-700 dark:text-gray-400">
                                         Not enough data avalilable to display
                                         charts.
                                     </p>
@@ -214,7 +215,7 @@ function Dashboard() {
                                 }}
                             />
                         ) : (
-                            <p class="p-4 font-normal text-sm text-gray-700 dark:text-gray-400">
+                            <p className="p-4 font-normal text-sm text-gray-700 dark:text-gray-400">
                                 Not enough data avalilable to display charts.
                             </p>
                         )}
@@ -254,7 +255,7 @@ function Dashboard() {
                                 }}
                             />
                         ) : (
-                            <p class="p-4 font-normal text-sm text-gray-700 dark:text-gray-400">
+                            <p className="p-4 font-normal text-sm text-gray-700 dark:text-gray-400">
                                 Not enough data avalilable to display charts.
                             </p>
                         )}
@@ -282,7 +283,7 @@ function Dashboard() {
                         ) : cvByCountry?.length > 0 ? (
                             <Piechart data={cvByCountry} />
                         ) : (
-                            <p class="p-4 font-normal text-sm text-gray-700 dark:text-gray-400">
+                            <p className="p-4 font-normal text-sm text-gray-700 dark:text-gray-400">
                                 Not enough data avalilable to display charts.
                             </p>
                         )}
@@ -318,11 +319,11 @@ function Dashboard() {
                                                 <p className="text-sm font-medium text-gray-900 truncate dark:text-white">
                                                     {status.user_name}
                                                 </p>
-                                                <p className="text-sm text-gray-500 truncate dark:text-gray-400">
+                                                {/* <p className="text-sm text-gray-500 truncate dark:text-gray-400">
                                                     {formatISODate(
                                                         status.status_date
                                                     )}
-                                                </p>
+                                                </p> */}
                                             </div>
                                             <div className="px-4">
                                                 <p className="leading-none text-sm font-bold text-gray-900 dark:text-white">
@@ -338,7 +339,7 @@ function Dashboard() {
                                     </li>
                                 ))
                             ) : (
-                                <p class="p-4 font-normal text-sm text-gray-700 dark:text-gray-400">
+                                <p className="p-4 font-normal text-sm text-gray-700 dark:text-gray-400">
                                     Not enough data avalilable to display
                                     charts.
                                 </p>

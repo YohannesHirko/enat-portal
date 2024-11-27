@@ -12,7 +12,7 @@ import { useAuthContext } from "../Contexts/AuthContext";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { genericFetcher, genericMutation } from "../Helpers/fetchers";
-
+import { AiFillSafetyCertificate } from "react-icons/ai";
 import { calculateAge, formatISODate } from "../Helpers/utils";
 import { FaCheck, FaPlaneArrival } from "react-icons/fa";
 import { MdCancelPresentation, MdEdit, MdOutlineCancel } from "react-icons/md";
@@ -109,7 +109,7 @@ function Applicants() {
         {
             field: "status",
             headerName: "Status",
-            width: 150,
+            width: 170,
             align: "center",
             renderCell: (params) => {
                 return (
@@ -180,6 +180,20 @@ function Applicants() {
                             endpoint: `applicants/${params.id}`,
                             method: "PATCH",
                             payload: { applicant: { arrived: true } },
+                        })
+                    }
+                    showInMenu
+                />,
+                <GridActionsCellItem
+                    icon={<AiFillSafetyCertificate />}
+                    label={"Mark as medical passed"}
+                    onClick={() =>
+                        mutation.mutate({
+                            baseURL: url,
+                            token: authToken,
+                            endpoint: `applicants/${params.id}`,
+                            method: "PATCH",
+                            payload: { applicant: { medical: true } },
                         })
                     }
                     showInMenu
