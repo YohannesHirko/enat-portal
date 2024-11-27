@@ -35,6 +35,14 @@ export const predefinedFilters = [
             items: [{ field: "status", operator: "is", value: "INSURED" }],
         },
     },
+    {
+        label: "Medical",
+        filterModel: {
+            items: [
+                { field: "status", operator: "is", value: "MEDICAL_PASSED" },
+            ],
+        },
+    },
 ];
 export const customIsOperator = {
     label: "is",
@@ -55,5 +63,6 @@ export const statusBadgeColor = {
     TICKETED: "yellow",
     ARRIVED: "blue",
     INACTIVE: "red",
-    INSURED: "gray",
+    INSURED: "blue",
+    MEDICAL_PASSED: "green",
 };
