@@ -1,55 +1,11 @@
 import React from "react";
-import { BsPeopleFill } from "react-icons/bs";
-import { GoPeople } from "react-icons/go";
-import { LuPieChart } from "react-icons/lu";
-import { MdWorkspacesOutline } from "react-icons/md";
-import { PiWarningCircle } from "react-icons/pi";
-import { TbReport, TbSettings } from "react-icons/tb";
-import { Link, NavLink } from "react-router-dom";
-import Button from "./Button";
+import { NavLink } from "react-router-dom";
 import SidebarAvatar from "./SidebarAvatar";
 import { useAppContext } from "../../Contexts/AppContextProvider";
-import { FaListUl } from "react-icons/fa";
-import { IoIosList } from "react-icons/io";
+import { sidebarLinks } from "../../constants";
 
-const sidebarLinks = [
-    {
-        title: "Dashboard",
-        links: [
-            {
-                name: "dashboard",
-                icon: <LuPieChart />,
-            },
-            {
-                name: "applicants",
-                icon: <GoPeople />,
-            },
-            {
-                name: "reports",
-                icon: <TbReport />,
-            },
-            {
-                name: "issues",
-                icon: <PiWarningCircle />,
-            },
-        ],
-    },
-    {
-        title: "utils",
-        links: [
-            {
-                name: "settings",
-                icon: <TbSettings />,
-            },
-            {
-                name: "archives",
-                icon: <IoIosList />,
-            },
-        ],
-    },
-];
 function Sidebar() {
-    const { setCurrentPageName, issuesCount } = useAppContext();
+    const { issuesCount } = useAppContext();
     const activeLink =
         "flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700 group bg-gray-200 dark:bg-gray-600";
     const normalLink =

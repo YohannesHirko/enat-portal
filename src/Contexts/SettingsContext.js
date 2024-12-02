@@ -11,7 +11,7 @@ export default function SettingsProvider({ children }) {
                   reports: {
                       agentPerformance: "week",
                       ticketExpense: "week",
-                      cvByCountry: "week",
+                      cvByCountry: "year",
                   },
                   applicants: {
                       showInactiveApplicants: false,

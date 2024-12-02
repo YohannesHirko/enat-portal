@@ -15,10 +15,14 @@ import { genericFetcher, genericMutation } from "../Helpers/fetchers";
 import { AiFillSafetyCertificate } from "react-icons/ai";
 import { calculateAge, formatISODate } from "../Helpers/utils";
 import { FaCheck, FaPlaneArrival } from "react-icons/fa";
-import { MdCancelPresentation, MdEdit, MdOutlineCancel } from "react-icons/md";
+import {
+    MdAirplanemodeInactive,
+    MdCancelPresentation,
+    MdEdit,
+    MdOutlineCancel,
+} from "react-icons/md";
 import { useSettingsContext } from "../Contexts/SettingsContext";
 import { BsPersonLinesFill } from "react-icons/bs";
-import { boolean } from "zod";
 import { statusBadgeColor } from "../constants";
 
 function Applicants() {
@@ -45,10 +49,12 @@ function Applicants() {
         onError: (error) => toast.error(error?.data?.message),
     });
     const handleRowClick = (params, event, details) => {
-        console.log(event?.target?.dataset?.field);
-        // if (params.id) {
-        //     navigate(`edit/${params.id}/info`);
-        // } else {
+        if (event?.target?.dataset?.field === "status") {
+            navigate(`edit/${params.id}/status`);
+        } else if (event?.target?.dataset?.field === "agent") {
+            navigate(`edit/${params.id}/visa`);
+        }
+        //  else {
         //     toast.error("Can not get id from the clicked row");
         // }
     };
@@ -89,12 +95,13 @@ function Applicants() {
             field: "created_at",
             headerName: "Registered",
             width: 150,
+            type: "date",
             valueFormatter: (value) => {
                 return formatISODate(value);
             },
         },
         { field: "id", headerName: "Reference number", width: 150 },
-        { field: "fullname", headerName: "First name", width: 150 },
+        { field: "fullname", headerName: "Full name", width: 150 },
         {
             field: "date_of_birth",
             headerName: "Age",
@@ -144,7 +151,7 @@ function Applicants() {
                             toast.error("Can not get id from the clicked row");
                         }
                     }}
-                    showInMenu
+                    showInMenu={false}
                 />,
                 <GridActionsCellItem
                     icon={
@@ -171,15 +178,25 @@ function Applicants() {
                     showInMenu
                 />,
                 <GridActionsCellItem
-                    icon={<FaPlaneArrival />}
-                    label={"Mark as Arrived"}
+                    icon={
+                        params.row.arrived === true ? (
+                            <MdAirplanemodeInactive />
+                        ) : (
+                            <FaPlaneArrival />
+                        )
+                    }
+                    label={`Mark as ${
+                        params.row.arrived === true ? "not arrived" : "arrived"
+                    } `}
                     onClick={() =>
                         mutation.mutate({
                             baseURL: url,
                             token: authToken,
                             endpoint: `applicants/${params.id}`,
                             method: "PATCH",
-                            payload: { applicant: { arrived: true } },
+                            payload: {
+                                applicant: { arrived: !params.row.arrived },
+                            },
                         })
                     }
                     showInMenu

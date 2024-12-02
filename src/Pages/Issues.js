@@ -7,39 +7,6 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useAppContext } from "../Contexts/AppContextProvider";
 
-const data = [
-    {
-        id: "hello",
-        fullname: "helloo",
-        issue_type: "visa",
-        description: "",
-    },
-    {
-        id: "hello",
-        fullname: "helloo",
-        issue_type: "visa",
-        description: "",
-    },
-    {
-        id: "EN24-10140221-10",
-        fullname: "helloo",
-        issue_type: "visa",
-        description: "",
-    },
-    {
-        id: "hello",
-        fullname: "helloo",
-        issue_type: "visa",
-        description: "",
-    },
-    {
-        id: "hello",
-        fullname: "helloo",
-        issue_type: "visa",
-        description: "",
-    },
-];
-
 function Issues() {
     const { url, authToken } = useAuthContext();
     const navigate = useNavigate();
@@ -54,16 +21,15 @@ function Issues() {
             }),
     });
     const handleRowClick = (params, event, details) => {
-        console.log(event?.target?.dataset?.field);
-        if (params.id) {
-            navigate(`/applicants/edit/${params.id}/info`);
-        } else {
-            toast.error("Can not get id from the clicked row");
+        if (params.row?.issue_type === "Passport issue (6 months)") {
+            navigate(`/applicants/edit/${params.row?.reference_no}/info`);
+        } else if (params.row?.issue_type === "Visa issue (15 days or above)") {
+            navigate(`/applicants/edit/${params.row?.reference_no}/visa`);
         }
     };
     const rows = query.data?.allIssues;
     const columns = [
-        { field: "id", headerName: "Reference number", width: 150 },
+        { field: "reference_no", headerName: "Reference number", width: 150 },
         { field: "fullname", headerName: "Full name", width: 150 },
         { field: "issue_type", headerName: "Issue type", width: 250 },
         { field: "description", headerName: "Description", width: 450 },
