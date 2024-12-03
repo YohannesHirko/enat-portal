@@ -50,13 +50,14 @@ function Reports() {
         {
             field: "created_at",
             headerName: "Registered",
+            type: "date",
             width: 150,
             valueFormatter: (value) => {
                 return formatISODate(value);
             },
         },
         { field: "reference_no", headerName: "Reference number", width: 150 },
-        { field: "fullname", headerName: "First name", width: 150 },
+        { field: "fullname", headerName: "Full name", width: 150 },
         { field: "gender", headerName: "Gender", width: 80 },
         { field: "relegion", headerName: "Relegion", width: 80 },
         {
@@ -94,7 +95,11 @@ function Reports() {
         { field: "agent", headerName: "Agent", width: 150 },
     ];
     const handleRowClick = (params, event, details) => {
-        console.log(event?.target?.dataset?.field);
+        if (event?.target?.dataset?.field === "status") {
+            navigate(`/applicants/edit/${params.row?.reference_no}/status`);
+        } else if (event?.target?.dataset?.field === "agent") {
+            navigate(`/applicants/edit/${params.row?.reference_no}/visa`);
+        }
         // if (params.id) {
         //     navigate(`/applicants/edit/${params.id}/info`);
         // } else {
@@ -157,6 +162,10 @@ function Reports() {
                             }}
                         />
                         <GridToolbarExport
+                            printOptions={{
+                                hideFooter: true,
+                                hideToolbar: true,
+                            }}
                             slotProps={{
                                 tooltip: { title: "Export data" },
                                 button: { color: "brand" },
@@ -182,10 +191,17 @@ function Reports() {
         <div className="rounded-lg mt-14">
             <div className="" style={{ height: "100%", width: "100%" }}>
                 <DataGrid
+                    sx={{
+                        "@media print": {
+                            ".MuiDataGrid-main": {
+                                color: "rgb(0, 0, 0)",
+                            },
+                        },
+                    }}
                     rows={rows}
                     columns={columns}
                     apiRef={apiRef}
-                    // onRowClick={handleRowClick}
+                    onRowClick={handleRowClick}
                     loading={reportQuery.isLoading}
                     initialState={{
                         sorting: {

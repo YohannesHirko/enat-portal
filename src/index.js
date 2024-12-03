@@ -32,7 +32,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import AppContextProvider from "./Contexts/AppContextProvider";
 import SettingsProvider from "./Contexts/SettingsContext";
-import Content from "./Content";
+import Arrived from "./Pages/Arrived";
 const router = createBrowserRouter([
     {
         path: "/",
@@ -115,6 +115,10 @@ const router = createBrowserRouter([
             {
                 path: "archives",
                 element: <Archives />,
+            },
+            {
+                path: "arrived",
+                element: <Arrived />,
             },
         ],
     },

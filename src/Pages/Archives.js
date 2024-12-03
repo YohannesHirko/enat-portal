@@ -60,12 +60,13 @@ function Archives() {
             field: "created_at",
             headerName: "Registered",
             width: 150,
+            type: "date",
             valueFormatter: (value) => {
                 return formatISODate(value);
             },
         },
         { field: "id", headerName: "Reference number", width: 150 },
-        { field: "fullname", headerName: "First name", width: 150 },
+        { field: "fullname", headerName: "Full name", width: 150 },
         {
             field: "date_of_birth",
             headerName: "Age",

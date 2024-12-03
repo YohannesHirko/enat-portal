@@ -1,3 +1,10 @@
+import { FaPlaneArrival } from "react-icons/fa";
+import { GoPeople } from "react-icons/go";
+import { IoIosList } from "react-icons/io";
+import { LuPieChart } from "react-icons/lu";
+import { PiWarningCircle } from "react-icons/pi";
+import { TbReport, TbSettings } from "react-icons/tb";
+
 export const predefinedFilters = [
     {
         label: "Selected",
@@ -66,3 +73,49 @@ export const statusBadgeColor = {
     INSURED: "blue",
     MEDICAL_PASSED: "green",
 };
+
+export const sidebarLinks = [
+    {
+        title: "basics",
+        links: [
+            {
+                name: "dashboard",
+                icon: <LuPieChart />,
+            },
+            {
+                name: "applicants",
+                icon: <GoPeople />,
+            },
+            {
+                name: "reports",
+                icon: <TbReport />,
+            },
+            {
+                name: "issues",
+                icon: <PiWarningCircle />,
+            },
+        ],
+    },
+    {
+        title: "data",
+        links: [
+            {
+                name: "arrived",
+                icon: <FaPlaneArrival />,
+            },
+            {
+                name: "archives",
+                icon: <IoIosList />,
+            },
+        ],
+    },
+    {
+        title: "utils",
+        links: [
+            {
+                name: "settings",
+                icon: <TbSettings />,
+            },
+        ],
+    },
+];
